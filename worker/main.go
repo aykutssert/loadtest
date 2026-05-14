@@ -239,29 +239,29 @@ func avgLatency(vals []int64) float64 {
 }
 
 func connectMongo(url string) (*mongo.Client, error) {
-	for i := 0; i < 12; i++ {
+	for i := 1; ; i++ {
 		client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(url))
 		if err == nil {
 			if pingErr := client.Ping(context.Background(), nil); pingErr == nil {
+				log.Printf("MongoDB connected")
 				return client, nil
 			}
 		}
-		log.Printf("MongoDB not ready, retry %d/12...", i+1)
+		log.Printf("MongoDB not ready (attempt %d) — retrying in 5s", i)
 		time.Sleep(5 * time.Second)
 	}
-	return nil, fmt.Errorf("cannot connect to MongoDB")
 }
 
 func connectRabbit(url string) (*amqp.Connection, error) {
-	for i := 0; i < 12; i++ {
+	for i := 1; ; i++ {
 		conn, err := amqp.Dial(url)
 		if err == nil {
+			log.Printf("RabbitMQ connected")
 			return conn, nil
 		}
-		log.Printf("RabbitMQ not ready, retry %d/12...", i+1)
+		log.Printf("RabbitMQ not ready (attempt %d): %v — retrying in 5s", i, err)
 		time.Sleep(5 * time.Second)
 	}
-	return nil, fmt.Errorf("cannot connect to RabbitMQ")
 }
 
 func getEnv(key, fallback string) string {
