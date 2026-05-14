@@ -68,6 +68,9 @@ app.MapPost("/tests", async (TestRequest req, MongoClient mongo, ConnectionFacto
     if (req.Concurrency > 200)
         return Results.BadRequest(new { error = "concurrency cannot exceed 200" });
 
+    if (req.TimeoutSeconds is < 1 or > 60)
+        return Results.BadRequest(new { error = "timeoutSeconds must be between 1 and 60" });
+
     var blocked = new[] { "kernelgallery.com", "localhost", "127.0.0.1", "::1" };
     var extraBlocked = (Environment.GetEnvironmentVariable("BLOCKED_HOSTS") ?? "")
         .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -77,25 +80,29 @@ app.MapPost("/tests", async (TestRequest req, MongoClient mongo, ConnectionFacto
     if (Uri.TryCreate(req.TargetUrl, UriKind.Absolute, out var uri) && IsPrivateIp(uri.Host))
         return Results.BadRequest(new { error = "This target is not allowed" });
 
-    var testId = Guid.NewGuid().ToString();
-    var col = mongo.GetDatabase("loadtest").GetCollection<TestRecord>("tests");
+    var timeout   = req.TimeoutSeconds > 0 ? req.TimeoutSeconds : 30;
+    var testId    = Guid.NewGuid().ToString();
+    var col       = mongo.GetDatabase("loadtest").GetCollection<TestRecord>("tests");
 
     await col.InsertOneAsync(new TestRecord
     {
-        Id = testId,
-        TargetUrl = req.TargetUrl,
-        RequestCount = req.RequestCount > 0 ? req.RequestCount : 100,
-        Concurrency = req.Concurrency > 0 ? req.Concurrency : 10,
-        Method = req.Method ?? "GET",
-        RampUpSeconds = req.RampUpSeconds >= 0 ? req.RampUpSeconds : 0,
-        Status = "queued",
-        CreatedAt = DateTime.UtcNow,
+        Id             = testId,
+        TargetUrl      = req.TargetUrl,
+        RequestCount   = req.RequestCount > 0 ? req.RequestCount : 100,
+        Concurrency    = req.Concurrency > 0 ? req.Concurrency : 10,
+        Method         = req.Method ?? "GET",
+        RampUpSeconds  = req.RampUpSeconds >= 0 ? req.RampUpSeconds : 0,
+        TimeoutSeconds = timeout,
+        Headers        = req.Headers ?? new(),
+        Body           = req.Body ?? "",
+        Status         = "queued",
+        CreatedAt      = DateTime.UtcNow,
     });
 
     try
     {
         using var connection = rabbitFactory.CreateConnection();
-        using var channel = connection.CreateModel();
+        using var channel    = connection.CreateModel();
         channel.QueueDeclare("loadtest_tasks", durable: true, exclusive: false, autoDelete: false);
         var props = channel.CreateBasicProperties();
         props.Persistent = true;
@@ -103,10 +110,13 @@ app.MapPost("/tests", async (TestRequest req, MongoClient mongo, ConnectionFacto
         {
             testId,
             req.TargetUrl,
-            requestCount = req.RequestCount > 0 ? req.RequestCount : 100,
-            concurrency = req.Concurrency > 0 ? req.Concurrency : 10,
-            method = req.Method ?? "GET",
-            rampUpSeconds = req.RampUpSeconds >= 0 ? req.RampUpSeconds : 0,
+            requestCount   = req.RequestCount > 0 ? req.RequestCount : 100,
+            concurrency    = req.Concurrency > 0 ? req.Concurrency : 10,
+            method         = req.Method ?? "GET",
+            rampUpSeconds  = req.RampUpSeconds >= 0 ? req.RampUpSeconds : 0,
+            timeoutSeconds = timeout,
+            headers        = req.Headers ?? new Dictionary<string, string>(),
+            body           = req.Body ?? "",
         }));
         channel.BasicPublish("", "loadtest_tasks", props, body);
     }
@@ -123,14 +133,14 @@ app.MapPost("/tests", async (TestRequest req, MongoClient mongo, ConnectionFacto
 
 app.MapGet("/tests/{id}", async (string id, MongoClient mongo) =>
 {
-    var col = mongo.GetDatabase("loadtest").GetCollection<TestRecord>("tests");
+    var col    = mongo.GetDatabase("loadtest").GetCollection<TestRecord>("tests");
     var record = await col.Find(t => t.Id == id).FirstOrDefaultAsync();
     return record is null ? Results.NotFound() : Results.Ok(record);
 });
 
 app.MapGet("/tests", async (MongoClient mongo) =>
 {
-    var col = mongo.GetDatabase("loadtest").GetCollection<TestRecord>("tests");
+    var col  = mongo.GetDatabase("loadtest").GetCollection<TestRecord>("tests");
     var list = await col.Find(_ => true)
         .SortByDescending(t => t.CreatedAt)
         .Limit(20)
@@ -152,7 +162,15 @@ static bool IsPrivateIp(string host)
         || ip.Equals(IPAddress.IPv6Loopback);
 }
 
-record TestRequest(string TargetUrl, int RequestCount, int Concurrency, string? Method, int RampUpSeconds);
+record TestRequest(
+    string TargetUrl,
+    int RequestCount,
+    int Concurrency,
+    string? Method,
+    int RampUpSeconds,
+    int TimeoutSeconds,
+    Dictionary<string, string>? Headers,
+    string? Body);
 
 class TestRecord
 {
@@ -164,6 +182,9 @@ class TestRecord
     public int Concurrency { get; set; }
     public string Method { get; set; } = "GET";
     public int RampUpSeconds { get; set; }
+    public int TimeoutSeconds { get; set; } = 30;
+    public Dictionary<string, string> Headers { get; set; } = new();
+    public string Body { get; set; } = "";
     public string Status { get; set; } = "queued";
     public DateTime CreatedAt { get; set; }
     public DateTime? CompletedAt { get; set; }

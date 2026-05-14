@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -18,12 +19,15 @@ import (
 )
 
 type Task struct {
-	TestID        string `json:"testId"`
-	TargetURL     string `json:"targetUrl"`
-	RequestCount  int    `json:"requestCount"`
-	Concurrency   int    `json:"concurrency"`
-	Method        string `json:"method"`
-	RampUpSeconds int    `json:"rampUpSeconds"`
+	TestID         string            `json:"testId"`
+	TargetURL      string            `json:"targetUrl"`
+	RequestCount   int               `json:"requestCount"`
+	Concurrency    int               `json:"concurrency"`
+	Method         string            `json:"method"`
+	RampUpSeconds  int               `json:"rampUpSeconds"`
+	TimeoutSeconds int               `json:"timeoutSeconds"`
+	Headers        map[string]string `json:"headers"`
+	Body           string            `json:"body"`
 }
 
 type requestResult struct {
@@ -114,8 +118,8 @@ func runConsumer(rabbitURL string, col *mongo.Collection) {
 			continue
 		}
 
-		log.Printf("Starting test %s → %s  requests=%d concurrency=%d",
-			task.TestID, task.TargetURL, task.RequestCount, task.Concurrency)
+		log.Printf("Starting test %s → %s  requests=%d concurrency=%d timeout=%ds",
+			task.TestID, task.TargetURL, task.RequestCount, task.Concurrency, task.TimeoutSeconds)
 
 		col.UpdateOne(context.Background(),
 			bson.M{"_id": task.TestID},
@@ -152,11 +156,14 @@ func runTest(task Task) ([]requestResult, float64, error) {
 	if task.Concurrency <= 0 {
 		task.Concurrency = 10
 	}
+	if task.TimeoutSeconds <= 0 {
+		task.TimeoutSeconds = 30
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
 
-	client := &http.Client{Timeout: 30 * time.Second}
+	client := &http.Client{Timeout: time.Duration(task.TimeoutSeconds) * time.Second}
 	results := make([]requestResult, 0, task.RequestCount)
 	var mu sync.Mutex
 	var wg sync.WaitGroup
@@ -190,12 +197,27 @@ loop:
 			defer wg.Done()
 			defer func() { <-sem }()
 
-			req, err := http.NewRequestWithContext(ctx, task.Method, task.TargetURL, nil)
+			var bodyReader *strings.Reader
+			if task.Body != "" {
+				bodyReader = strings.NewReader(task.Body)
+			}
+
+			var req *http.Request
+			var err error
+			if bodyReader != nil {
+				req, err = http.NewRequestWithContext(ctx, task.Method, task.TargetURL, bodyReader)
+			} else {
+				req, err = http.NewRequestWithContext(ctx, task.Method, task.TargetURL, nil)
+			}
 			if err != nil {
 				mu.Lock()
 				results = append(results, requestResult{isError: true})
 				mu.Unlock()
 				return
+			}
+
+			for k, v := range task.Headers {
+				req.Header.Set(k, v)
 			}
 
 			t := time.Now()
