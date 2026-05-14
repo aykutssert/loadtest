@@ -24,15 +24,19 @@ var rabbitUrl = Environment.GetEnvironmentVariable("RABBITMQ_URL") ?? "amqp://gu
 builder.Services.AddSingleton(new MongoClient(mongoUrl));
 
 // Retry RabbitMQ connection on startup (services may not be ready immediately)
-IConnection? rabbitConn = null;
-var factory = new ConnectionFactory { Uri = new Uri(rabbitUrl) };
-for (int i = 0; i < 12; i++)
+IConnection rabbitConn = ConnectRabbitMQ(rabbitUrl);
+builder.Services.AddSingleton<IConnection>(rabbitConn);
+
+static IConnection ConnectRabbitMQ(string url)
 {
-    try { rabbitConn = factory.CreateConnection(); break; }
-    catch { Thread.Sleep(5000); }
+    var factory = new ConnectionFactory { Uri = new Uri(url) };
+    for (int i = 0; i < 12; i++)
+    {
+        try { return factory.CreateConnection(); }
+        catch { Thread.Sleep(5000); }
+    }
+    throw new Exception("Cannot connect to RabbitMQ after retries");
 }
-if (rabbitConn is null) throw new Exception("Cannot connect to RabbitMQ after retries");
-builder.Services.AddSingleton(rabbitConn);
 
 var app = builder.Build();
 app.UseCors();
