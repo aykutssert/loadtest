@@ -20,7 +20,6 @@ builder.Services.ConfigureHttpJsonOptions(opts =>
 var mongoUrl = Environment.GetEnvironmentVariable("MONGODB_URL") ?? "mongodb://root:password@localhost:27017/";
 builder.Services.AddSingleton(new MongoClient(mongoUrl));
 
-// ConnectionFactory singleton — bağlantı startup'ta değil, request gelince kurulur
 builder.Services.AddSingleton(new ConnectionFactory
 {
     HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost",

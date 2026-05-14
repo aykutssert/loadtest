@@ -16,3 +16,6 @@ frontend/.env.local
 .env
 *.log
 .DS_Store
+
+## Local notes
+MEMORY.md
