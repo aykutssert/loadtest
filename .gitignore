@@ -1,0 +1,18 @@
+## .NET
+api/bin/
+api/obj/
+*.user
+
+## Go
+worker/worker
+worker/*.exe
+
+## Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+
+## General
+.env
+*.log
+.DS_Store
