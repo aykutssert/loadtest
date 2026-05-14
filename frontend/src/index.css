@@ -8,7 +8,7 @@
 
 body {
   background-color: #0a0a0f;
-  color: #e2e8f0;
+  color: #ffffff;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
@@ -19,6 +19,6 @@ body {
   background: #0a0a0f;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e1e2e;
+  background: #27272a;
   border-radius: 3px;
 }

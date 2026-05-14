@@ -5,8 +5,8 @@ import {
 } from 'recharts'
 
 const STATUS_COLORS = {
-  queued:    { bg: 'bg-[#1e293b]',     text: 'text-[#94a3b8]', dot: 'bg-[#475569]' },
-  running:   { bg: 'bg-[#1e3a5f20]',  text: 'text-[#60a5fa]', dot: 'bg-[#3b82f6]' },
+  queued:    { bg: 'bg-[#1e293b]',     text: 'text-[#a1a1aa]', dot: 'bg-[#475569]' },
+  running:   { bg: 'bg-[#f9731615]',  text: 'text-[#f97316]', dot: 'bg-[#f97316]' },
   completed: { bg: 'bg-[#06652015]',  text: 'text-[#34d399]', dot: 'bg-[#10b981]' },
   failed:    { bg: 'bg-[#ef444415]',  text: 'text-[#f87171]', dot: 'bg-[#ef4444]' },
 }
@@ -24,10 +24,10 @@ function StatusBadge({ status }) {
 function MetricCard({ label, value, unit, accent }) {
   return (
     <div className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-md p-4">
-      <p className="text-xs text-[#94a3b8] mb-1.5">{label}</p>
-      <p className={`text-2xl font-semibold tabular-nums ${accent ?? 'text-[#e2e8f0]'}`}>
+      <p className="text-xs text-[#a1a1aa] mb-1.5">{label}</p>
+      <p className={`text-2xl font-semibold tabular-nums ${accent ?? 'text-white'}`}>
         {value}
-        {unit && <span className="text-sm font-normal text-[#94a3b8] ml-1">{unit}</span>}
+        {unit && <span className="text-sm font-normal text-[#a1a1aa] ml-1">{unit}</span>}
       </p>
     </div>
   )
@@ -69,8 +69,8 @@ export default function ResultsPanel({ testId }) {
   if (!data) {
     return (
       <div className="bg-[#0f0f1a] border border-[#1e1e2e] rounded-md p-6 flex items-center gap-3">
-        <span className="w-4 h-4 border-2 border-[#2563eb] border-t-transparent rounded-full animate-spin" />
-        <span className="text-sm text-[#94a3b8]">Loading…</span>
+        <span className="w-4 h-4 border-2 border-[#f97316] border-t-transparent rounded-full animate-spin" />
+        <span className="text-sm text-[#a1a1aa]">Loading…</span>
       </div>
     )
   }
@@ -80,9 +80,9 @@ export default function ResultsPanel({ testId }) {
   const latencyChartData = r
     ? [
         { name: 'P50', value: r.latency.p50, color: '#10b981' },
-        { name: 'P90', value: r.latency.p90, color: '#3b82f6' },
+        { name: 'P90', value: r.latency.p90, color: '#f97316' },
         { name: 'P99', value: r.latency.p99, color: '#ef4444' },
-        { name: 'Avg', value: r.latency.avg, color: '#64748b' },
+        { name: 'Avg', value: r.latency.avg, color: '#71717a' },
       ]
     : []
 
@@ -90,25 +90,25 @@ export default function ResultsPanel({ testId }) {
     <div className="bg-[#0f0f1a] border border-[#1e1e2e] rounded-md p-6 space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-xs font-medium text-[#94a3b8] uppercase tracking-widest mb-1">
+          <h2 className="text-xs font-medium text-[#a1a1aa] uppercase tracking-widest mb-1">
             Test Results
           </h2>
-          <p className="text-xs text-[#475569] font-mono">{testId}</p>
-          <p className="text-xs text-[#94a3b8] mt-0.5 truncate max-w-xs">{data.targetUrl}</p>
+          <p className="text-xs text-[#52525b] font-mono">{testId}</p>
+          <p className="text-xs text-[#a1a1aa] mt-0.5 truncate max-w-xs">{data.targetUrl}</p>
         </div>
         <StatusBadge status={data.status} />
       </div>
 
       {data.status === 'running' && (
-        <div className="flex items-center gap-3 text-sm text-[#60a5fa]">
-          <span className="w-4 h-4 border-2 border-[#3b82f6] border-t-transparent rounded-full animate-spin" />
+        <div className="flex items-center gap-3 text-sm text-[#f97316]">
+          <span className="w-4 h-4 border-2 border-[#f97316] border-t-transparent rounded-full animate-spin" />
           Executing {data.requestCount.toLocaleString()} requests with concurrency {data.concurrency}
           {data.rampUpSeconds > 0 && ` · ramping up over ${data.rampUpSeconds}s`}…
         </div>
       )}
 
       {data.status === 'queued' && (
-        <div className="flex items-center gap-3 text-sm text-[#94a3b8]">
+        <div className="flex items-center gap-3 text-sm text-[#a1a1aa]">
           <span className="w-4 h-4 border-2 border-[#475569] border-t-transparent rounded-full animate-spin" />
           Waiting for a worker…
         </div>
@@ -117,7 +117,7 @@ export default function ResultsPanel({ testId }) {
       {r && (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <MetricCard label="Throughput"  value={r.rps.toFixed(1)}            unit="RPS" accent="text-[#60a5fa]" />
+            <MetricCard label="Throughput"  value={r.rps.toFixed(1)}            unit="RPS" accent="text-[#f97316]" />
             <MetricCard label="P50 Latency" value={r.latency.p50.toFixed(0)}    unit="ms"  accent="text-[#34d399]" />
             <MetricCard label="P90 Latency" value={r.latency.p90.toFixed(0)}    unit="ms" />
             <MetricCard label="P99 Latency" value={r.latency.p99.toFixed(0)}    unit="ms"  accent="text-[#f87171]" />
@@ -136,15 +136,15 @@ export default function ResultsPanel({ testId }) {
           </div>
 
           <div>
-            <p className="text-xs text-[#94a3b8] mb-3">Latency Distribution</p>
+            <p className="text-xs text-[#a1a1aa] mb-3">Latency Distribution</p>
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={latencyChartData} barSize={36}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e1e2e" vertical={false} />
-                <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} unit="ms" />
+                <XAxis dataKey="name" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} unit="ms" />
                 <Tooltip
                   contentStyle={{ background: '#0f0f1a', border: '1px solid #1e1e2e', borderRadius: 8, fontSize: 12 }}
-                  labelStyle={{ color: '#64748b' }}
+                  labelStyle={{ color: '#a1a1aa' }}
                   itemStyle={{ color: '#e2e8f0' }}
                   formatter={(v) => [`${v.toFixed(1)} ms`]}
                 />
@@ -159,7 +159,7 @@ export default function ResultsPanel({ testId }) {
 
           {Object.keys(r.statusCodes).length > 0 && (
             <div>
-              <p className="text-xs text-[#94a3b8] mb-3">Status Codes</p>
+              <p className="text-xs text-[#a1a1aa] mb-3">Status Codes</p>
               <div className="flex flex-wrap gap-2">
                 {Object.entries(r.statusCodes).map(([code, count]) => (
                   <span
@@ -169,7 +169,7 @@ export default function ResultsPanel({ testId }) {
                         ? 'bg-[#06652015] text-[#34d399]'
                         : code.startsWith('4') || code.startsWith('5')
                         ? 'bg-[#ef444415] text-[#f87171]'
-                        : 'bg-[#1e293b] text-[#94a3b8]'
+                        : 'bg-[#1e293b] text-[#a1a1aa]'
                     }`}
                   >
                     {code} <span className="opacity-50">×</span> {count.toLocaleString()}
@@ -179,7 +179,7 @@ export default function ResultsPanel({ testId }) {
             </div>
           )}
 
-          <p className="text-xs text-[#475569] tabular-nums">
+          <p className="text-xs text-[#52525b] tabular-nums">
             Duration: {r.durationSeconds.toFixed(2)}s · Min: {r.latency.min.toFixed(0)}ms · Max: {r.latency.max.toFixed(0)}ms
           </p>
         </>

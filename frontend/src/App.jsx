@@ -16,14 +16,14 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-[#e2e8f0]">
+    <div className="min-h-screen bg-[#0a0a0f] text-white">
       <header className="border-b border-[#1e1e2e] px-6 py-3.5">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <img src="/logo.svg" alt="Kernel" className="w-6 h-6" />
             <span className="text-base font-semibold tracking-tight text-white">Surge</span>
             <span className="hidden sm:inline text-xs text-[#334155] select-none">|</span>
-            <span className="hidden sm:block text-xs text-[#94a3b8]">
+            <span className="hidden sm:block text-xs text-[#a1a1aa]">
               Distributed load testing · C# · Go · RabbitMQ
             </span>
           </div>
@@ -31,7 +31,7 @@ export default function App() {
             href="https://kernelgallery.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-[#94a3b8] hover:text-[#94a3b8] transition-colors"
+            className="text-xs text-[#a1a1aa] hover:text-[#a1a1aa] transition-colors"
           >
             kernelgallery.com
           </a>
