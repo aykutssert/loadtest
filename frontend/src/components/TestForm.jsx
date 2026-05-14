@@ -49,31 +49,31 @@ export default function TestForm({ onTestStart }) {
   }
 
   return (
-    <div className="bg-[#0f0f1a] border border-[#1e1e2e] rounded-xl p-6">
-      <h2 className="text-xs font-medium text-[#4a4a62] uppercase tracking-widest mb-5">
+    <div className="bg-[#0f0f1a] border border-[#1e1e2e] rounded-md p-6">
+      <h2 className="text-xs font-medium text-[#94a3b8] uppercase tracking-widest mb-5">
         Configure Test
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs text-[#64748b] mb-1.5">Target URL</label>
+          <label className="block text-xs text-[#94a3b8] mb-1.5">Target URL</label>
           <input
             type="url"
             required
             placeholder="https://example.com"
             value={form.targetUrl}
             onChange={set('targetUrl')}
-            className="w-full bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg px-4 py-2.5 text-sm text-[#e2e8f0] placeholder-[#2a2a3a] focus:outline-none focus:border-[#2563eb] transition-colors"
+            className="w-full bg-[#0a0a0f] border border-[#1e1e2e] rounded px-4 py-2.5 text-sm text-[#e2e8f0] placeholder-[#2a2a3a] focus:outline-none focus:border-[#2563eb] transition-colors"
           />
         </div>
 
         <div className="grid grid-cols-4 gap-3">
           <div>
-            <label className="block text-xs text-[#64748b] mb-1.5">Method</label>
+            <label className="block text-xs text-[#94a3b8] mb-1.5">Method</label>
             <select
               value={form.method}
               onChange={set('method')}
-              className="w-full bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg px-3 py-2.5 text-sm text-[#e2e8f0] focus:outline-none focus:border-[#2563eb] transition-colors"
+              className="w-full bg-[#0a0a0f] border border-[#1e1e2e] rounded px-3 py-2.5 text-sm text-[#e2e8f0] focus:outline-none focus:border-[#2563eb] transition-colors"
             >
               {METHODS.map((m) => (
                 <option key={m} value={m}>{m}</option>
@@ -82,7 +82,7 @@ export default function TestForm({ onTestStart }) {
           </div>
 
           <div>
-            <label className="block text-xs text-[#64748b] mb-1.5">
+            <label className="block text-xs text-[#94a3b8] mb-1.5">
               Requests <span className="text-[#2563eb]">{Number(form.requestCount).toLocaleString()}</span>
             </label>
             <input
@@ -91,12 +91,12 @@ export default function TestForm({ onTestStart }) {
               max={5000}
               value={form.requestCount}
               onChange={set('requestCount')}
-              className="w-full bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg px-3 py-2.5 text-sm text-[#e2e8f0] focus:outline-none focus:border-[#2563eb] transition-colors"
+              className="w-full bg-[#0a0a0f] border border-[#1e1e2e] rounded px-3 py-2.5 text-sm text-[#e2e8f0] focus:outline-none focus:border-[#2563eb] transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-[#64748b] mb-1.5">
+            <label className="block text-xs text-[#94a3b8] mb-1.5">
               Concurrency <span className="text-[#2563eb]">{form.concurrency}</span>
             </label>
             <input
@@ -105,13 +105,13 @@ export default function TestForm({ onTestStart }) {
               max={200}
               value={form.concurrency}
               onChange={set('concurrency')}
-              className="w-full bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg px-3 py-2.5 text-sm text-[#e2e8f0] focus:outline-none focus:border-[#2563eb] transition-colors"
+              className="w-full bg-[#0a0a0f] border border-[#1e1e2e] rounded px-3 py-2.5 text-sm text-[#e2e8f0] focus:outline-none focus:border-[#2563eb] transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-[#64748b] mb-1.5">
-              Ramp-up <span className="text-[#4a4a62]">s (optional)</span>
+            <label className="block text-xs text-[#94a3b8] mb-1.5">
+              Ramp-up <span className="text-[#94a3b8]">s (optional)</span>
             </label>
             <input
               type="number"
@@ -120,13 +120,13 @@ export default function TestForm({ onTestStart }) {
               placeholder="—"
               value={form.rampUpSeconds}
               onChange={set('rampUpSeconds')}
-              className="w-full bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg px-3 py-2.5 text-sm text-[#e2e8f0] placeholder-[#2a2a3a] focus:outline-none focus:border-[#2563eb] transition-colors"
+              className="w-full bg-[#0a0a0f] border border-[#1e1e2e] rounded px-3 py-2.5 text-sm text-[#e2e8f0] placeholder-[#2a2a3a] focus:outline-none focus:border-[#2563eb] transition-colors"
             />
           </div>
         </div>
 
         {error && (
-          <p className="text-xs text-[#f87171] bg-[#ef444408] border border-[#ef444420] rounded-lg px-3 py-2">
+          <p className="text-xs text-[#f87171] bg-[#ef444408] border border-[#ef444420] rounded px-3 py-2">
             {error}
           </p>
         )}
@@ -134,7 +134,7 @@ export default function TestForm({ onTestStart }) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-[#2563eb] hover:bg-[#1d4ed8] disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium rounded-lg py-2.5 text-sm transition-colors"
+          className="w-full bg-[#2563eb] hover:bg-[#1d4ed8] disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium rounded py-2.5 text-sm transition-colors"
         >
           {loading ? 'Starting…' : 'Run Test'}
         </button>

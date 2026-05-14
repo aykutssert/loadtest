@@ -23,11 +23,11 @@ function StatusBadge({ status }) {
 
 function MetricCard({ label, value, unit, accent }) {
   return (
-    <div className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-xl p-4">
-      <p className="text-xs text-[#4a4a62] mb-1.5">{label}</p>
+    <div className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-md p-4">
+      <p className="text-xs text-[#94a3b8] mb-1.5">{label}</p>
       <p className={`text-2xl font-semibold tabular-nums ${accent ?? 'text-[#e2e8f0]'}`}>
         {value}
-        {unit && <span className="text-sm font-normal text-[#4a4a62] ml-1">{unit}</span>}
+        {unit && <span className="text-sm font-normal text-[#94a3b8] ml-1">{unit}</span>}
       </p>
     </div>
   )
@@ -60,7 +60,7 @@ export default function ResultsPanel({ testId }) {
 
   if (error) {
     return (
-      <div className="bg-[#0f0f1a] border border-[#1e1e2e] rounded-xl p-6">
+      <div className="bg-[#0f0f1a] border border-[#1e1e2e] rounded-md p-6">
         <p className="text-[#f87171] text-sm">Error: {error}</p>
       </div>
     )
@@ -68,9 +68,9 @@ export default function ResultsPanel({ testId }) {
 
   if (!data) {
     return (
-      <div className="bg-[#0f0f1a] border border-[#1e1e2e] rounded-xl p-6 flex items-center gap-3">
+      <div className="bg-[#0f0f1a] border border-[#1e1e2e] rounded-md p-6 flex items-center gap-3">
         <span className="w-4 h-4 border-2 border-[#2563eb] border-t-transparent rounded-full animate-spin" />
-        <span className="text-sm text-[#4a4a62]">Loading…</span>
+        <span className="text-sm text-[#94a3b8]">Loading…</span>
       </div>
     )
   }
@@ -87,14 +87,14 @@ export default function ResultsPanel({ testId }) {
     : []
 
   return (
-    <div className="bg-[#0f0f1a] border border-[#1e1e2e] rounded-xl p-6 space-y-6">
+    <div className="bg-[#0f0f1a] border border-[#1e1e2e] rounded-md p-6 space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-xs font-medium text-[#4a4a62] uppercase tracking-widest mb-1">
+          <h2 className="text-xs font-medium text-[#94a3b8] uppercase tracking-widest mb-1">
             Test Results
           </h2>
-          <p className="text-xs text-[#2a2a3a] font-mono">{testId}</p>
-          <p className="text-xs text-[#4a4a62] mt-0.5 truncate max-w-xs">{data.targetUrl}</p>
+          <p className="text-xs text-[#475569] font-mono">{testId}</p>
+          <p className="text-xs text-[#94a3b8] mt-0.5 truncate max-w-xs">{data.targetUrl}</p>
         </div>
         <StatusBadge status={data.status} />
       </div>
@@ -108,7 +108,7 @@ export default function ResultsPanel({ testId }) {
       )}
 
       {data.status === 'queued' && (
-        <div className="flex items-center gap-3 text-sm text-[#64748b]">
+        <div className="flex items-center gap-3 text-sm text-[#94a3b8]">
           <span className="w-4 h-4 border-2 border-[#475569] border-t-transparent rounded-full animate-spin" />
           Waiting for a worker…
         </div>
@@ -136,12 +136,12 @@ export default function ResultsPanel({ testId }) {
           </div>
 
           <div>
-            <p className="text-xs text-[#4a4a62] mb-3">Latency Distribution</p>
+            <p className="text-xs text-[#94a3b8] mb-3">Latency Distribution</p>
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={latencyChartData} barSize={36}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e1e2e" vertical={false} />
-                <XAxis dataKey="name" tick={{ fill: '#4a4a62', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#4a4a62', fontSize: 11 }} axisLine={false} tickLine={false} unit="ms" />
+                <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} unit="ms" />
                 <Tooltip
                   contentStyle={{ background: '#0f0f1a', border: '1px solid #1e1e2e', borderRadius: 8, fontSize: 12 }}
                   labelStyle={{ color: '#64748b' }}
@@ -159,12 +159,12 @@ export default function ResultsPanel({ testId }) {
 
           {Object.keys(r.statusCodes).length > 0 && (
             <div>
-              <p className="text-xs text-[#4a4a62] mb-3">Status Codes</p>
+              <p className="text-xs text-[#94a3b8] mb-3">Status Codes</p>
               <div className="flex flex-wrap gap-2">
                 {Object.entries(r.statusCodes).map(([code, count]) => (
                   <span
                     key={code}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium ${
+                    className={`px-3 py-1.5 rounded text-xs font-mono font-medium ${
                       code.startsWith('2')
                         ? 'bg-[#06652015] text-[#34d399]'
                         : code.startsWith('4') || code.startsWith('5')
@@ -179,7 +179,7 @@ export default function ResultsPanel({ testId }) {
             </div>
           )}
 
-          <p className="text-xs text-[#2a2a3a] tabular-nums">
+          <p className="text-xs text-[#475569] tabular-nums">
             Duration: {r.durationSeconds.toFixed(2)}s · Min: {r.latency.min.toFixed(0)}ms · Max: {r.latency.max.toFixed(0)}ms
           </p>
         </>

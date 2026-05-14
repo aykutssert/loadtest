@@ -22,8 +22,8 @@ export default function App() {
           <div className="flex items-center gap-3">
             <img src="/logo.svg" alt="Kernel" className="w-6 h-6" />
             <span className="text-base font-semibold tracking-tight text-white">Surge</span>
-            <span className="hidden sm:inline text-xs text-[#3f3f52] select-none">|</span>
-            <span className="hidden sm:block text-xs text-[#4a4a62]">
+            <span className="hidden sm:inline text-xs text-[#334155] select-none">|</span>
+            <span className="hidden sm:block text-xs text-[#94a3b8]">
               Distributed load testing · C# · Go · RabbitMQ
             </span>
           </div>
@@ -31,7 +31,7 @@ export default function App() {
             href="https://kernelgallery.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-[#4a4a62] hover:text-[#94a3b8] transition-colors"
+            className="text-xs text-[#94a3b8] hover:text-[#94a3b8] transition-colors"
           >
             kernelgallery.com
           </a>

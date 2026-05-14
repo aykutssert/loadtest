@@ -66,16 +66,16 @@ export default function InfoPanel() {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="bg-[#0f0f1a] border border-[#1e1e2e] rounded-xl overflow-hidden">
+    <div className="bg-[#0f0f1a] border border-[#1e1e2e] rounded-md overflow-hidden">
       <button
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between px-5 py-3.5 text-left hover:bg-[#0a0a0f] transition-colors"
       >
-        <span className="text-xs font-medium text-[#4a4a62] uppercase tracking-widest">
+        <span className="text-xs font-medium text-[#94a3b8] uppercase tracking-widest">
           How It Works
         </span>
         <svg
-          className={`w-3.5 h-3.5 text-[#4a4a62] transition-transform ${open ? 'rotate-180' : ''}`}
+          className={`w-3.5 h-3.5 text-[#94a3b8] transition-transform ${open ? 'rotate-180' : ''}`}
           fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -86,12 +86,12 @@ export default function InfoPanel() {
         <div className="px-5 pb-5 space-y-6 border-t border-[#1e1e2e] pt-5">
           {SECTIONS.map((section) => (
             <div key={section.title}>
-              <p className="text-xs font-medium text-[#64748b] mb-3">{section.title}</p>
+              <p className="text-xs font-medium text-[#94a3b8] mb-3">{section.title}</p>
               <dl className="space-y-3">
                 {section.items.map((item) => (
                   <div key={item.term}>
                     <dt className="text-xs font-medium text-[#94a3b8] mb-0.5">{item.term}</dt>
-                    <dd className="text-xs text-[#4a4a62] leading-relaxed">{item.def}</dd>
+                    <dd className="text-xs text-[#94a3b8] leading-relaxed">{item.def}</dd>
                   </div>
                 ))}
               </dl>
