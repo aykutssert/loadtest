@@ -64,7 +64,7 @@ export default function TestHistory({ onSelect, refreshKey }) {
       )}
 
       {!loading && tests.length === 0 && (
-        <p className="text-xs text-[#52525b]">No tests yet this session.</p>
+        <p className="text-xs text-[#a1a1aa]">No tests yet this session.</p>
       )}
 
       <ul className="space-y-1.5">
@@ -78,10 +78,10 @@ export default function TestHistory({ onSelect, refreshKey }) {
                 <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${STATUS_COLORS[t.status] ?? STATUS_COLORS.queued}`}>
                   {t.status}
                 </span>
-                <span className="text-[10px] text-[#52525b]">{timeAgo(t.createdAt)}</span>
+                <span className="text-[10px] text-[#a1a1aa]">{timeAgo(t.createdAt)}</span>
               </div>
               <p className="text-xs text-[#a1a1aa] truncate">{t.targetUrl}</p>
-              <p className="text-[10px] text-[#52525b] mt-0.5">
+              <p className="text-[10px] text-[#a1a1aa] mt-0.5">
                 {t.requestCount?.toLocaleString()} req · {t.concurrency} concurrent
                 {t.results && ` · ${t.results.rps?.toFixed(1)} RPS`}
               </p>

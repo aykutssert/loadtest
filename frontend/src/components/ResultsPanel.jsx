@@ -93,7 +93,7 @@ export default function ResultsPanel({ testId }) {
           <h2 className="text-xs font-medium text-white uppercase tracking-widest mb-1">
             Test Results
           </h2>
-          <p className="text-xs text-[#52525b] font-mono">{testId}</p>
+          <p className="text-xs text-[#a1a1aa] font-mono">{testId}</p>
           <p className="text-xs text-[#a1a1aa] mt-0.5 truncate max-w-xs">{data.targetUrl}</p>
         </div>
         <StatusBadge status={data.status} />
@@ -140,8 +140,8 @@ export default function ResultsPanel({ testId }) {
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={latencyChartData} barSize={36}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e1e2e" vertical={false} />
-                <XAxis dataKey="name" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} unit="ms" />
+                <XAxis dataKey="name" tick={{ fill: '#a1a1aa', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#a1a1aa', fontSize: 11 }} axisLine={false} tickLine={false} unit="ms" />
                 <Tooltip
                   contentStyle={{ background: '#0f0f1a', border: '1px solid #1e1e2e', borderRadius: 8, fontSize: 12 }}
                   labelStyle={{ color: '#a1a1aa' }}
@@ -179,7 +179,7 @@ export default function ResultsPanel({ testId }) {
             </div>
           )}
 
-          <p className="text-xs text-[#52525b] tabular-nums">
+          <p className="text-xs text-[#a1a1aa] tabular-nums">
             Duration: {r.durationSeconds.toFixed(2)}s · Min: {r.latency.min.toFixed(0)}ms · Max: {r.latency.max.toFixed(0)}ms
           </p>
         </>

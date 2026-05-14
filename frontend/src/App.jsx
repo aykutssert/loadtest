@@ -31,7 +31,7 @@ export default function App() {
             href="https://kernelgallery.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-[#71717a] hover:text-white transition-colors"
+            className="text-xs text-[#a1a1aa] hover:text-white transition-colors"
           >
             kernelgallery.com
           </a>
