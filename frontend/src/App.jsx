@@ -2,14 +2,17 @@ import { useState } from 'react'
 import TestForm from './components/TestForm'
 import ResultsPanel from './components/ResultsPanel'
 import TestHistory from './components/TestHistory'
+import InfoPanel from './components/InfoPanel'
+import { addSessionTest } from './components/TestHistory'
 
 export default function App() {
   const [activeTestId, setActiveTestId] = useState(null)
-  const [historyKey, setHistoryKey] = useState(0)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const handleTestStart = (testId) => {
+    addSessionTest(testId)
     setActiveTestId(testId)
-    setHistoryKey((k) => k + 1)
+    setRefreshKey((k) => k + 1)
   }
 
   return (
@@ -17,6 +20,7 @@ export default function App() {
       <header className="border-b border-[#1e1e2e] px-6 py-3.5">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
+            <img src="/logo.svg" alt="Kernel" className="w-6 h-6" />
             <span className="text-base font-semibold tracking-tight text-white">Surge</span>
             <span className="hidden sm:inline text-xs text-[#3f3f52] select-none">|</span>
             <span className="hidden sm:block text-xs text-[#4a4a62]">
@@ -40,9 +44,10 @@ export default function App() {
           {activeTestId && (
             <ResultsPanel testId={activeTestId} />
           )}
+          <InfoPanel />
         </div>
         <aside>
-          <TestHistory key={historyKey} onSelect={setActiveTestId} />
+          <TestHistory refreshKey={refreshKey} onSelect={setActiveTestId} />
         </aside>
       </main>
     </div>
