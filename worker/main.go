@@ -18,12 +18,12 @@ import (
 )
 
 type Task struct {
-	TestID         string `json:"testId"`
-	TargetURL      string `json:"targetUrl"`
-	RequestCount   int    `json:"requestCount"`
-	Concurrency    int    `json:"concurrency"`
-	Method         string `json:"method"`
-	RampUpSeconds  int    `json:"rampUpSeconds"`
+	TestID        string `json:"testId"`
+	TargetURL     string `json:"targetUrl"`
+	RequestCount  int    `json:"requestCount"`
+	Concurrency   int    `json:"concurrency"`
+	Method        string `json:"method"`
+	RampUpSeconds int    `json:"rampUpSeconds"`
 }
 
 type requestResult struct {
@@ -74,15 +74,26 @@ func main() {
 		Options: options.Index().SetExpireAfterSeconds(ttl),
 	})
 
+	log.Println("Worker ready — waiting for tasks")
+
+	for {
+		runConsumer(rabbitURL, col)
+		log.Println("RabbitMQ connection lost — reconnecting in 5s")
+		time.Sleep(5 * time.Second)
+	}
+}
+
+func runConsumer(rabbitURL string, col *mongo.Collection) {
 	conn, err := connectRabbit(rabbitURL)
 	if err != nil {
-		log.Fatalf("RabbitMQ connection failed: %v", err)
+		return
 	}
 	defer conn.Close()
 
 	ch, err := conn.Channel()
 	if err != nil {
-		log.Fatalf("Failed to open channel: %v", err)
+		log.Printf("Failed to open channel: %v", err)
+		return
 	}
 	defer ch.Close()
 
@@ -91,10 +102,9 @@ func main() {
 
 	msgs, err := ch.Consume("loadtest_tasks", "", false, false, false, false, nil)
 	if err != nil {
-		log.Fatalf("Failed to register consumer: %v", err)
+		log.Printf("Failed to register consumer: %v", err)
+		return
 	}
-
-	log.Println("Worker ready — waiting for tasks")
 
 	for msg := range msgs {
 		var task Task
@@ -143,6 +153,9 @@ func runTest(task Task) ([]requestResult, float64, error) {
 		task.Concurrency = 10
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+
 	client := &http.Client{Timeout: 30 * time.Second}
 	results := make([]requestResult, 0, task.RequestCount)
 	var mu sync.Mutex
@@ -156,21 +169,31 @@ func runTest(task Task) ([]requestResult, float64, error) {
 
 	start := time.Now()
 
+loop:
 	for i := 0; i < task.RequestCount; i++ {
 		if rampDelay > 0 && i < task.Concurrency {
-			time.Sleep(rampDelay)
+			select {
+			case <-time.After(rampDelay):
+			case <-ctx.Done():
+				break loop
+			}
 		}
-		wg.Add(1)
-		sem <- struct{}{}
 
+		select {
+		case sem <- struct{}{}:
+		case <-ctx.Done():
+			break loop
+		}
+
+		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			defer func() { <-sem }()
 
-			req, err := http.NewRequest(task.Method, task.TargetURL, nil)
+			req, err := http.NewRequestWithContext(ctx, task.Method, task.TargetURL, nil)
 			if err != nil {
 				mu.Lock()
-				results = append(results, requestResult{latencyMs: 0, isError: true})
+				results = append(results, requestResult{isError: true})
 				mu.Unlock()
 				return
 			}
@@ -194,6 +217,11 @@ func runTest(task Task) ([]requestResult, float64, error) {
 	}
 
 	wg.Wait()
+
+	if ctx.Err() != nil {
+		return results, time.Since(start).Seconds(), fmt.Errorf("test exceeded 10-minute limit")
+	}
+
 	return results, time.Since(start).Seconds(), nil
 }
 

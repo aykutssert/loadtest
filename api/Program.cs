@@ -1,10 +1,13 @@
+using System.Net;
+using System.Text;
+using System.Text.Json;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Driver;
 using RabbitMQ.Client;
-using System.Text;
-using System.Text.Json;
 
 var pack = new ConventionPack { new CamelCaseElementNameConvention() };
 ConventionRegistry.Register("camelCase", pack, _ => true);
@@ -16,6 +19,26 @@ builder.Services.AddCors(options =>
 
 builder.Services.ConfigureHttpJsonOptions(opts =>
     opts.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("post-tests", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+            }));
+    options.RejectionStatusCode = 429;
+    options.OnRejected = async (ctx, _) =>
+    {
+        ctx.HttpContext.Response.ContentType = "application/json";
+        await ctx.HttpContext.Response.WriteAsync(
+            JsonSerializer.Serialize(new { error = "Too many requests. Max 10 tests per minute." }));
+    };
+});
 
 var mongoUrl = Environment.GetEnvironmentVariable("MONGODB_URL") ?? "mongodb://root:password@localhost:27017/";
 builder.Services.AddSingleton(new MongoClient(mongoUrl));
@@ -30,6 +53,7 @@ builder.Services.AddSingleton(new ConnectionFactory
 
 var app = builder.Build();
 app.UseCors();
+app.UseRateLimiter();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
@@ -48,6 +72,9 @@ app.MapPost("/tests", async (TestRequest req, MongoClient mongo, ConnectionFacto
     var extraBlocked = (Environment.GetEnvironmentVariable("BLOCKED_HOSTS") ?? "")
         .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     if (blocked.Concat(extraBlocked).Any(b => req.TargetUrl.Contains(b, StringComparison.OrdinalIgnoreCase)))
+        return Results.BadRequest(new { error = "This target is not allowed" });
+
+    if (Uri.TryCreate(req.TargetUrl, UriKind.Absolute, out var uri) && IsPrivateIp(uri.Host))
         return Results.BadRequest(new { error = "This target is not allowed" });
 
     var testId = Guid.NewGuid().ToString();
@@ -92,7 +119,7 @@ app.MapPost("/tests", async (TestRequest req, MongoClient mongo, ConnectionFacto
     }
 
     return Results.Accepted($"/tests/{testId}", new { testId, status = "queued" });
-});
+}).RequireRateLimiting("post-tests");
 
 app.MapGet("/tests/{id}", async (string id, MongoClient mongo) =>
 {
@@ -112,6 +139,18 @@ app.MapGet("/tests", async (MongoClient mongo) =>
 });
 
 app.Run();
+
+static bool IsPrivateIp(string host)
+{
+    if (!IPAddress.TryParse(host, out var ip))
+        return false;
+    var b = ip.MapToIPv4().GetAddressBytes();
+    return b[0] == 10
+        || b[0] == 127
+        || (b[0] == 172 && b[1] >= 16 && b[1] <= 31)
+        || (b[0] == 192 && b[1] == 168)
+        || ip.Equals(IPAddress.IPv6Loopback);
+}
 
 record TestRequest(string TargetUrl, int RequestCount, int Concurrency, string? Method, int RampUpSeconds);
 
