@@ -104,7 +104,8 @@ export default function ResultsPanel({ testId }) {
       {data.status === 'running' && (
         <div className="flex items-center gap-3 text-sm text-[#60a5fa]">
           <span className="w-4 h-4 border-2 border-[#3b82f6] border-t-transparent rounded-full animate-spin" />
-          Executing {data.requestCount.toLocaleString()} requests with concurrency {data.concurrency}…
+          Executing {data.requestCount.toLocaleString()} requests with concurrency {data.concurrency}
+          {data.rampUpSeconds > 0 && ` · ramping up over ${data.rampUpSeconds}s`}…
         </div>
       )}
 

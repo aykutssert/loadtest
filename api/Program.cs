@@ -59,6 +59,7 @@ app.MapPost("/tests", async (TestRequest req, MongoClient mongo, ConnectionFacto
         RequestCount = req.RequestCount > 0 ? req.RequestCount : 100,
         Concurrency = req.Concurrency > 0 ? req.Concurrency : 10,
         Method = req.Method ?? "GET",
+        RampUpSeconds = req.RampUpSeconds >= 0 ? req.RampUpSeconds : 0,
         Status = "queued",
         CreatedAt = DateTime.UtcNow,
     });
@@ -77,6 +78,7 @@ app.MapPost("/tests", async (TestRequest req, MongoClient mongo, ConnectionFacto
             requestCount = req.RequestCount > 0 ? req.RequestCount : 100,
             concurrency = req.Concurrency > 0 ? req.Concurrency : 10,
             method = req.Method ?? "GET",
+            rampUpSeconds = req.RampUpSeconds >= 0 ? req.RampUpSeconds : 0,
         }));
         channel.BasicPublish("", "loadtest_tasks", props, body);
     }
@@ -110,7 +112,7 @@ app.MapGet("/tests", async (MongoClient mongo) =>
 
 app.Run();
 
-record TestRequest(string TargetUrl, int RequestCount, int Concurrency, string? Method);
+record TestRequest(string TargetUrl, int RequestCount, int Concurrency, string? Method, int RampUpSeconds);
 
 class TestRecord
 {
@@ -121,6 +123,7 @@ class TestRecord
     public int RequestCount { get; set; }
     public int Concurrency { get; set; }
     public string Method { get; set; } = "GET";
+    public int RampUpSeconds { get; set; }
     public string Status { get; set; } = "queued";
     public DateTime CreatedAt { get; set; }
     public DateTime? CompletedAt { get; set; }

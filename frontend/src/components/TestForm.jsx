@@ -9,6 +9,7 @@ export default function TestForm({ onTestStart }) {
     requestCount: 500,
     concurrency: 50,
     method: 'GET',
+    rampUpSeconds: '',
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -29,6 +30,7 @@ export default function TestForm({ onTestStart }) {
           requestCount: Number(form.requestCount),
           concurrency: Number(form.concurrency),
           method: form.method,
+          rampUpSeconds: form.rampUpSeconds !== '' ? Number(form.rampUpSeconds) : 0,
         }),
       })
 
@@ -67,7 +69,7 @@ export default function TestForm({ onTestStart }) {
         </div>
 
         {/* Method + Counts */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-4 gap-3">
           <div>
             <label className="block text-xs text-[#64748b] mb-1.5">Method</label>
             <select
@@ -106,6 +108,21 @@ export default function TestForm({ onTestStart }) {
               value={form.concurrency}
               onChange={set('concurrency')}
               className="w-full bg-[#0f0f13] border border-[#2a2a3a] rounded-lg px-3 py-2.5 text-sm text-[#f1f5f9] focus:outline-none focus:border-[#7c3aed] transition-colors"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs text-[#64748b] mb-1.5">
+              Ramp-up <span className="text-[#64748b] font-normal">(s, optional)</span>
+            </label>
+            <input
+              type="number"
+              min={1}
+              max={300}
+              placeholder="—"
+              value={form.rampUpSeconds}
+              onChange={set('rampUpSeconds')}
+              className="w-full bg-[#0f0f13] border border-[#2a2a3a] rounded-lg px-3 py-2.5 text-sm text-[#f1f5f9] placeholder-[#374151] focus:outline-none focus:border-[#7c3aed] transition-colors"
             />
           </div>
         </div>

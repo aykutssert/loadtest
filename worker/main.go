@@ -18,11 +18,12 @@ import (
 )
 
 type Task struct {
-	TestID       string `json:"testId"`
-	TargetURL    string `json:"targetUrl"`
-	RequestCount int    `json:"requestCount"`
-	Concurrency  int    `json:"concurrency"`
-	Method       string `json:"method"`
+	TestID         string `json:"testId"`
+	TargetURL      string `json:"targetUrl"`
+	RequestCount   int    `json:"requestCount"`
+	Concurrency    int    `json:"concurrency"`
+	Method         string `json:"method"`
+	RampUpSeconds  int    `json:"rampUpSeconds"`
 }
 
 type requestResult struct {
@@ -142,9 +143,19 @@ func runTest(task Task) ([]requestResult, float64, error) {
 	var wg sync.WaitGroup
 	sem := make(chan struct{}, task.Concurrency)
 
+	// Ramp-up: space out the first Concurrency launches over RampUpSeconds.
+	// After that, goroutines launch as fast as slots free up (steady state).
+	var rampDelay time.Duration
+	if task.RampUpSeconds > 0 {
+		rampDelay = time.Duration(float64(task.RampUpSeconds) / float64(task.Concurrency) * float64(time.Second))
+	}
+
 	start := time.Now()
 
 	for i := 0; i < task.RequestCount; i++ {
+		if rampDelay > 0 && i < task.Concurrency {
+			time.Sleep(rampDelay)
+		}
 		wg.Add(1)
 		sem <- struct{}{}
 
