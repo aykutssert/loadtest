@@ -44,8 +44,10 @@ app.MapPost("/tests", async (TestRequest req, MongoClient mongo, ConnectionFacto
     if (req.Concurrency > 200)
         return Results.BadRequest(new { error = "concurrency cannot exceed 200" });
 
-    var blocked = new[] { "kernelgallery.com", "localhost", "127.0.0.1", "<REDACTED>", "::1" };
-    if (blocked.Any(b => req.TargetUrl.Contains(b, StringComparison.OrdinalIgnoreCase)))
+    var blocked = new[] { "kernelgallery.com", "localhost", "127.0.0.1", "::1" };
+    var extraBlocked = (Environment.GetEnvironmentVariable("BLOCKED_HOSTS") ?? "")
+        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    if (blocked.Concat(extraBlocked).Any(b => req.TargetUrl.Contains(b, StringComparison.OrdinalIgnoreCase)))
         return Results.BadRequest(new { error = "This target is not allowed" });
 
     var testId = Guid.NewGuid().ToString();
