@@ -47,6 +47,12 @@ app.MapPost("/tests", async (TestRequest req, MongoClient mongo, IConnection rab
     if (string.IsNullOrWhiteSpace(req.TargetUrl))
         return Results.BadRequest(new { error = "targetUrl is required" });
 
+    if (req.RequestCount > 5000)
+        return Results.BadRequest(new { error = "requestCount cannot exceed 5000" });
+
+    if (req.Concurrency > 200)
+        return Results.BadRequest(new { error = "concurrency cannot exceed 200" });
+
     var testId = Guid.NewGuid().ToString();
     var col = mongo.GetDatabase("loadtest").GetCollection<TestRecord>("tests");
 

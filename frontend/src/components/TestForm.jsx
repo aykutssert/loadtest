@@ -87,7 +87,7 @@ export default function TestForm({ onTestStart }) {
             <input
               type="number"
               min={1}
-              max={10000}
+              max={5000}
               value={form.requestCount}
               onChange={set('requestCount')}
               className="w-full bg-[#0f0f13] border border-[#2a2a3a] rounded-lg px-3 py-2.5 text-sm text-[#f1f5f9] focus:outline-none focus:border-[#7c3aed] transition-colors"
@@ -101,7 +101,7 @@ export default function TestForm({ onTestStart }) {
             <input
               type="number"
               min={1}
-              max={500}
+              max={200}
               value={form.concurrency}
               onChange={set('concurrency')}
               className="w-full bg-[#0f0f13] border border-[#2a2a3a] rounded-lg px-3 py-2.5 text-sm text-[#f1f5f9] focus:outline-none focus:border-[#7c3aed] transition-colors"
