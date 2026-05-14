@@ -6,7 +6,6 @@ using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
 
-// MongoDB: map PascalCase C# props → camelCase BSON fields (matches Go worker output)
 var pack = new ConventionPack { new CamelCaseElementNameConvention() };
 ConventionRegistry.Register("camelCase", pack, _ => true);
 
@@ -19,35 +18,23 @@ builder.Services.ConfigureHttpJsonOptions(opts =>
     opts.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
 
 var mongoUrl = Environment.GetEnvironmentVariable("MONGODB_URL") ?? "mongodb://root:password@localhost:27017/";
-
 builder.Services.AddSingleton(new MongoClient(mongoUrl));
 
-// Retry RabbitMQ connection on startup (services may not be ready immediately)
-IConnection rabbitConn = ConnectRabbitMQ();
-builder.Services.AddSingleton<IConnection>(rabbitConn);
-
-static IConnection ConnectRabbitMQ()
+// ConnectionFactory singleton — bağlantı startup'ta değil, request gelince kurulur
+builder.Services.AddSingleton(new ConnectionFactory
 {
-    var factory = new ConnectionFactory
-    {
-        HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost",
-        Port     = int.Parse(Environment.GetEnvironmentVariable("RABBITMQ_PORT") ?? "5672"),
-        UserName = Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "guest",
-        Password = Environment.GetEnvironmentVariable("RABBITMQ_PASS") ?? "guest",
-    };
-    for (int i = 0; i < 12; i++)
-    {
-        try { return factory.CreateConnection(); }
-        catch { Thread.Sleep(5000); }
-    }
-    throw new Exception("Cannot connect to RabbitMQ after retries");
-}
+    HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost",
+    Port     = int.Parse(Environment.GetEnvironmentVariable("RABBITMQ_PORT") ?? "5672"),
+    UserName = Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "guest",
+    Password = Environment.GetEnvironmentVariable("RABBITMQ_PASS") ?? "guest",
+});
 
 var app = builder.Build();
 app.UseCors();
 
-// POST /tests — validate, enqueue, return 202 + testId
-app.MapPost("/tests", async (TestRequest req, MongoClient mongo, IConnection rabbit) =>
+app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+
+app.MapPost("/tests", async (TestRequest req, MongoClient mongo, ConnectionFactory rabbitFactory) =>
 {
     if (string.IsNullOrWhiteSpace(req.TargetUrl))
         return Results.BadRequest(new { error = "targetUrl is required" });
@@ -76,24 +63,34 @@ app.MapPost("/tests", async (TestRequest req, MongoClient mongo, IConnection rab
         CreatedAt = DateTime.UtcNow,
     });
 
-    using var channel = rabbit.CreateModel();
-    channel.QueueDeclare("loadtest_tasks", durable: true, exclusive: false, autoDelete: false);
-    var props = channel.CreateBasicProperties();
-    props.Persistent = true;
-    var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
+    try
     {
-        testId,
-        req.TargetUrl,
-        requestCount = req.RequestCount > 0 ? req.RequestCount : 100,
-        concurrency = req.Concurrency > 0 ? req.Concurrency : 10,
-        method = req.Method ?? "GET",
-    }));
-    channel.BasicPublish("", "loadtest_tasks", props, body);
+        using var connection = rabbitFactory.CreateConnection();
+        using var channel = connection.CreateModel();
+        channel.QueueDeclare("loadtest_tasks", durable: true, exclusive: false, autoDelete: false);
+        var props = channel.CreateBasicProperties();
+        props.Persistent = true;
+        var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
+        {
+            testId,
+            req.TargetUrl,
+            requestCount = req.RequestCount > 0 ? req.RequestCount : 100,
+            concurrency = req.Concurrency > 0 ? req.Concurrency : 10,
+            method = req.Method ?? "GET",
+        }));
+        channel.BasicPublish("", "loadtest_tasks", props, body);
+    }
+    catch (Exception ex)
+    {
+        await col.UpdateOneAsync(
+            t => t.Id == testId,
+            Builders<TestRecord>.Update.Set(t => t.Status, "failed"));
+        return Results.Problem($"RabbitMQ unavailable: {ex.Message}");
+    }
 
     return Results.Accepted($"/tests/{testId}", new { testId, status = "queued" });
 });
 
-// GET /tests/{id} — fetch single test by ID
 app.MapGet("/tests/{id}", async (string id, MongoClient mongo) =>
 {
     var col = mongo.GetDatabase("loadtest").GetCollection<TestRecord>("tests");
@@ -101,7 +98,6 @@ app.MapGet("/tests/{id}", async (string id, MongoClient mongo) =>
     return record is null ? Results.NotFound() : Results.Ok(record);
 });
 
-// GET /tests — list 20 most recent tests
 app.MapGet("/tests", async (MongoClient mongo) =>
 {
     var col = mongo.GetDatabase("loadtest").GetCollection<TestRecord>("tests");
