@@ -19,17 +19,22 @@ builder.Services.ConfigureHttpJsonOptions(opts =>
     opts.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
 
 var mongoUrl = Environment.GetEnvironmentVariable("MONGODB_URL") ?? "mongodb://root:password@localhost:27017/";
-var rabbitUrl = Environment.GetEnvironmentVariable("RABBITMQ_URL") ?? "amqp://guest:guest@localhost:5672/";
 
 builder.Services.AddSingleton(new MongoClient(mongoUrl));
 
 // Retry RabbitMQ connection on startup (services may not be ready immediately)
-IConnection rabbitConn = ConnectRabbitMQ(rabbitUrl);
+IConnection rabbitConn = ConnectRabbitMQ();
 builder.Services.AddSingleton<IConnection>(rabbitConn);
 
-static IConnection ConnectRabbitMQ(string url)
+static IConnection ConnectRabbitMQ()
 {
-    var factory = new ConnectionFactory { Uri = new Uri(url) };
+    var factory = new ConnectionFactory
+    {
+        HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost",
+        Port     = int.Parse(Environment.GetEnvironmentVariable("RABBITMQ_PORT") ?? "5672"),
+        UserName = Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "guest",
+        Password = Environment.GetEnvironmentVariable("RABBITMQ_PASS") ?? "guest",
+    };
     for (int i = 0; i < 12; i++)
     {
         try { return factory.CreateConnection(); }

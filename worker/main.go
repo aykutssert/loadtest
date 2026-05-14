@@ -52,7 +52,12 @@ type TestResults struct {
 }
 
 func main() {
-	rabbitURL := getEnv("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")
+	rabbitURL := fmt.Sprintf("amqp://%s:%s@%s:%s/",
+		getEnv("RABBITMQ_USER", "guest"),
+		getEnv("RABBITMQ_PASS", "guest"),
+		getEnv("RABBITMQ_HOST", "localhost"),
+		getEnv("RABBITMQ_PORT", "5672"),
+	)
 	mongoURL := getEnv("MONGODB_URL", "mongodb://root:password@localhost:27017/")
 
 	mongoClient, err := connectMongo(mongoURL)
