@@ -68,6 +68,12 @@ func main() {
 	defer mongoClient.Disconnect(context.Background())
 	col := mongoClient.Database("loadtest").Collection("tests")
 
+	ttl := int32(30 * 24 * 60 * 60)
+	col.Indexes().CreateOne(context.Background(), mongo.IndexModel{
+		Keys:    bson.D{{Key: "createdAt", Value: 1}},
+		Options: options.Index().SetExpireAfterSeconds(ttl),
+	})
+
 	conn, err := connectRabbit(rabbitURL)
 	if err != nil {
 		log.Fatalf("RabbitMQ connection failed: %v", err)
