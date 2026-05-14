@@ -71,7 +71,7 @@ export default function InfoPanel() {
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between px-5 py-3.5 text-left hover:bg-[#0a0a0f] transition-colors"
       >
-        <span className="text-xs font-medium text-[#a1a1aa] uppercase tracking-widest">
+        <span className="text-xs font-medium text-white uppercase tracking-widest">
           How It Works
         </span>
         <svg
@@ -86,11 +86,11 @@ export default function InfoPanel() {
         <div className="px-5 pb-5 space-y-6 border-t border-[#1e1e2e] pt-5">
           {SECTIONS.map((section) => (
             <div key={section.title}>
-              <p className="text-xs font-medium text-[#a1a1aa] mb-3">{section.title}</p>
+              <p className="text-xs font-medium text-[#d4d4d8] mb-3">{section.title}</p>
               <dl className="space-y-3">
                 {section.items.map((item) => (
                   <div key={item.term}>
-                    <dt className="text-xs font-medium text-[#a1a1aa] mb-0.5">{item.term}</dt>
+                    <dt className="text-xs font-medium text-[#d4d4d8] mb-0.5">{item.term}</dt>
                     <dd className="text-xs text-[#a1a1aa] leading-relaxed">{item.def}</dd>
                   </div>
                 ))}

@@ -90,7 +90,7 @@ export default function ResultsPanel({ testId }) {
     <div className="bg-[#0f0f1a] border border-[#1e1e2e] rounded-md p-6 space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-xs font-medium text-[#a1a1aa] uppercase tracking-widest mb-1">
+          <h2 className="text-xs font-medium text-white uppercase tracking-widest mb-1">
             Test Results
           </h2>
           <p className="text-xs text-[#52525b] font-mono">{testId}</p>

@@ -52,7 +52,7 @@ export default function TestHistory({ onSelect, refreshKey }) {
 
   return (
     <div className="bg-[#0f0f1a] border border-[#1e1e2e] rounded-md p-5">
-      <h2 className="text-xs font-medium text-[#a1a1aa] uppercase tracking-widest mb-4">
+      <h2 className="text-xs font-medium text-white uppercase tracking-widest mb-4">
         This Session
       </h2>
 

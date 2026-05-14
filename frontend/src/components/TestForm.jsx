@@ -50,13 +50,13 @@ export default function TestForm({ onTestStart }) {
 
   return (
     <div className="bg-[#0f0f1a] border border-[#1e1e2e] rounded-md p-6">
-      <h2 className="text-xs font-medium text-[#a1a1aa] uppercase tracking-widest mb-5">
+      <h2 className="text-xs font-medium text-white uppercase tracking-widest mb-5">
         Configure Test
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs text-[#a1a1aa] mb-1.5">Target URL</label>
+          <label className="block text-xs text-[#d4d4d8] mb-1.5">Target URL</label>
           <input
             type="url"
             required
@@ -69,7 +69,7 @@ export default function TestForm({ onTestStart }) {
 
         <div className="grid grid-cols-4 gap-3">
           <div>
-            <label className="block text-xs text-[#a1a1aa] mb-1.5">Method</label>
+            <label className="block text-xs text-[#d4d4d8] mb-1.5">Method</label>
             <select
               value={form.method}
               onChange={set('method')}
@@ -82,7 +82,7 @@ export default function TestForm({ onTestStart }) {
           </div>
 
           <div>
-            <label className="block text-xs text-[#a1a1aa] mb-1.5">
+            <label className="block text-xs text-[#d4d4d8] mb-1.5">
               Requests <span className="text-[#f97316]">{Number(form.requestCount).toLocaleString()}</span>
             </label>
             <input
@@ -96,7 +96,7 @@ export default function TestForm({ onTestStart }) {
           </div>
 
           <div>
-            <label className="block text-xs text-[#a1a1aa] mb-1.5">
+            <label className="block text-xs text-[#d4d4d8] mb-1.5">
               Concurrency <span className="text-[#f97316]">{form.concurrency}</span>
             </label>
             <input
@@ -110,7 +110,7 @@ export default function TestForm({ onTestStart }) {
           </div>
 
           <div>
-            <label className="block text-xs text-[#a1a1aa] mb-1.5">
+            <label className="block text-xs text-[#d4d4d8] mb-1.5">
               Ramp-up <span className="text-[#a1a1aa]">s (optional)</span>
             </label>
             <input
