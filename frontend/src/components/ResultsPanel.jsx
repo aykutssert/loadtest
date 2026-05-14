@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { API } from '../api'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts'
@@ -41,7 +42,7 @@ export default function ResultsPanel({ testId }) {
 
     const poll = async () => {
       try {
-        const res = await fetch(`/api/tests/${testId}`)
+        const res = await fetch(`${API}/tests/${testId}`)
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const json = await res.json()
         if (alive) setData(json)

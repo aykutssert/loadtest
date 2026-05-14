@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { API } from '../api'
 
 const STATUS_COLORS = {
   queued: 'text-[#a78bfa] bg-[#7c3aed20]',
@@ -19,7 +20,7 @@ export default function TestHistory({ onSelect }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/tests')
+    fetch(`${API}/tests`)
       .then((r) => r.json())
       .then(setTests)
       .catch(() => {})

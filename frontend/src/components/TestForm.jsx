@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { API } from '../api'
 
 const METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'HEAD']
 
@@ -20,7 +21,7 @@ export default function TestForm({ onTestStart }) {
     setLoading(true)
 
     try {
-      const res = await fetch('/api/tests', {
+      const res = await fetch(`${API}/tests`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
